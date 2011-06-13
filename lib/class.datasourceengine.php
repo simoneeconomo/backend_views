@@ -2,19 +2,19 @@
 
 Class DatasourceEngine {
 
-	public static function fetch(Datasource $ds, $engine) {
+	public static function fetch(Datasource $ds, $engine, $context = array()) {
 		switch($ds->getSource()) {
 #			case 'navigation': {
-#					return self::__processNavigation($ds, $engine);
+#					return self::__processNavigation($ds, $engine, $context);
 #				}
 #				break;
 			case 'authors': {
-					return self::__processAuthors($ds, $engine);
+					return self::__processAuthors($ds, $engine, $context);
 				}
 				break;
 			default: {
 				if (preg_match("/^[0-9]*$/", $ds->getSource())) {
-					return self::__processSection($ds, $engine);
+					return self::__processSection($ds, $engine, $context);
 				} else {
 					throw new DatasourceNotSupportedException;
 				}
@@ -22,7 +22,7 @@ Class DatasourceEngine {
 		}
 	}
 
-	private static function __processNavigation($ds, $engine) {
+	private static function __processNavigation($ds, $engine, $context) {
 
 		/* -----------------------------------------------------
 		 * Filtering
@@ -81,12 +81,14 @@ Class DatasourceEngine {
 		 
 		return array(
 			'source' => 'navigation',
-			'records' => $pages,
+			'entries' => array(
+				'records' => $pages
+			),
 			'schema' => NULL,
 		);
 	}
 	
-	private static function __processAuthors($ds, $engine) {
+	private static function __processAuthors($ds, $engine, $context) {
 
 		/* -----------------------------------------------------
 		 * Filtering
@@ -149,12 +151,14 @@ Class DatasourceEngine {
 
 		return array(
 			'source' => 'authors',
-			'records' => $wrappers,
+			'entries' => array(
+				'records' => $wrappers
+			),
 			'schema' => $ds->dsParamINCLUDEDELEMENTS
 		);
 	}
 	
-	private static function __processSection($ds, $engine) {
+	private static function __processSection($ds, $engine, $context) {
 		$where = $joins = NULL;
 		$group = false;
 
@@ -237,12 +241,8 @@ Class DatasourceEngine {
 		 * Grouping & Pagination
 		 * -----------------------------------------------------
 		 */
-		
-		if(is_array($ds->dsParamINCLUDEDELEMENTS)) {
-			$include_pagination_element = in_array('system:pagination', $ds->dsParamINCLUDEDELEMENTS);
-		}
 
-#		$datasource_schema = $ds->dsParamINCLUDEDELEMENTS;
+		$datasource_schema = $ds->dsParamINCLUDEDELEMENTS;
 
 #		if (!is_array($datasource_schema))
 #			$datasource_schema = array();
@@ -255,6 +255,18 @@ Class DatasourceEngine {
 
 		if(!isset($ds->dsParamPAGINATERESULTS)) {
 			$ds->dsParamPAGINATERESULTS = 'yes';
+		}
+
+		if($context['startpage'] && preg_match("/^[1-9]+[0-9]*$/", intval($context['startpage']))) {
+			$startpage = $context['startpage'];
+		} else {
+			$startpage = ($ds->dsParamPAGINATERESULTS == 'yes' && $ds->dsParamSTARTPAGE > 0 ? $ds->dsParamSTARTPAGE : 1);
+		}
+
+		if ($ds->dsParamPAGINATERESULTS == 'yes' && $ds->dsParamLIMIT >= 0) {
+			$entries_per_page = $ds->dsParamLIMIT;
+		} else {
+			$entries_per_page = NULL;
 		}
 
 		/* -----------------------------------------------------
@@ -293,13 +305,10 @@ Class DatasourceEngine {
 		 */
 
 		$entries = $entryManager->fetchByPage(
-			($ds->dsParamPAGINATERESULTS == 'yes' && $ds->dsParamSTARTPAGE > 0 ? $ds->dsParamSTARTPAGE : 1),
-			$ds->getSource(),
-			($ds->dsParamPAGINATERESULTS == 'yes' && $ds->dsParamLIMIT >= 0 ? $ds->dsParamLIMIT : NULL),
+			$startpage, $ds->getSource(),
+			$entries_per_page,
 			$where, $joins, $group,
-			(!$include_pagination_element ? true : false),
-			true
-#			$datasource_schema
+			false, true, $datasource_schema
 		);
 
 		/**
@@ -325,7 +334,7 @@ Class DatasourceEngine {
 
 		return array(
 			'source' => $section,
-			'records' => $entries['records'],
+			'entries' => $entries,
 			'schema' => $fields_schema
 		);
 	}

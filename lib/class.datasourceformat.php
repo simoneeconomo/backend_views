@@ -7,7 +7,7 @@ abstract class DatasourceFormat {
 	protected $_engine;
 	
 	public function __construct(Array $input, $engine) {
-		if (!is_array($input) || empty($input) || !isset($input['source']) || !isset($input['records']) || !isset($input['schema'])) {
+		if (!is_array($input) || empty($input) || array_keys($input) != array('source', 'entries', 'schema')) {
 			throw new Exception(
 				__('Invalid input array. Cannot generate output')
 			);
@@ -16,7 +16,7 @@ abstract class DatasourceFormat {
 		$this->_input = $input;
 		$this->_output = array(
 			'schema' => NULL,
-			'records' => NULL
+			'records' => NULL,
 		);
 		$this->_engine = $engine;
 	}

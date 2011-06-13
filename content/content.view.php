@@ -48,9 +48,17 @@
 					'button', NULL, array('accesskey' => 'e'))->generate()
 			);
 
+			/* -----------------------------------------------------
+			 * Fetching
+			 * -----------------------------------------------------
+			 */
+
 			$result = DatasourceEngine::fetch(
 				$datasources->create($this->_context[0], NULL, false),
-				Administration::instance()
+				Administration::instance(),
+				array(
+					'startpage' => $_REQUEST['pg']
+				)
 			);
 
 			$format = new DatasourceFormatHTML($result, $engine);
@@ -64,6 +72,63 @@
 			);
 
 			$this->Form->appendChild($table);
+
+			/* -----------------------------------------------------
+			 * Pagination
+			 * -----------------------------------------------------
+			 */
+
+			$entries = $result['entries'];
+
+			if (isset($entries['total-entries']) && $entries['total-entries'] != count($entries['records'])) {
+				$current_page = (isset($_REQUEST['pg']) ? intval($_REQUEST['pg']) : 1);
+
+				$ul = new XMLElement('ul');
+				$ul->setAttribute('class', 'page');
+
+				## First
+				$li = new XMLElement('li');
+				if($current_page > 1)
+					$li->appendChild(Widget::Anchor(__('First'), Administration::instance()->getCurrentPageURL(). '?pg=1'));
+				else
+					$li->setValue(__('First'));
+				$ul->appendChild($li);
+
+				## Previous
+				$li = new XMLElement('li');
+				if($current_page > 1)
+					$li->appendChild(Widget::Anchor(__('&larr; Previous'), Administration::instance()->getCurrentPageURL(). '?pg=' . ($current_page - 1)));
+				else
+					$li->setValue(__('&larr; Previous'));
+				$ul->appendChild($li);
+
+				## Summary
+				$li = new XMLElement('li', __('Page %1$s of %2$s', array($current_page, max($current_page, $entries['total-pages']))));
+				$li->setAttribute('title', __('Viewing %1$s - %2$s of %3$s entries', array(
+					$entries['start'],
+					($current_page != $entries['total-pages']) ? $current_page * $entries['limit'] : $entries['total-entries'],
+					$entries['total-entries']
+				)));
+				$ul->appendChild($li);
+
+				## Next
+				$li = new XMLElement('li');
+				if($current_page < $entries['total-pages'])
+					$li->appendChild(Widget::Anchor(__('Next &rarr;'), Administration::instance()->getCurrentPageURL(). '?pg=' . ($current_page + 1)));
+				else
+					$li->setValue(__('Next &rarr;'));
+				$ul->appendChild($li);
+
+				## Last
+				$li = new XMLElement('li');
+				if($current_page < $entries['total-pages'])
+					$li->appendChild(Widget::Anchor(__('Last'), Administration::instance()->getCurrentPageURL(). '?pg=' . $entries['total-pages']));
+				else
+					$li->setValue(__('Last'));
+				$ul->appendChild($li);
+
+				$this->Form->appendChild($ul);
+			}
 		}
 
 	}

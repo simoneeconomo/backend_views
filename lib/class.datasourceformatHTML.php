@@ -52,14 +52,14 @@ Class DatasourceFormatHTML extends DatasourceFormat {
 	}
 
 	protected function __formatRecords() {
-		if(!is_array($this->_input['records']) || empty($this->_input['records'])){
+		if(!is_array($this->_input['entries']) || empty($this->_input['entries'])){
 			return $this->_output['records'] = array(
 				Widget::TableRow(array(Widget::TableData(__('None found.'), 'inactive', NULL, count($aTableHead))), 'odd')
 			);
 		}
 		
 		if ($this->_input['source'] instanceof Section) {
-			foreach($this->_input['records'] as $entry) {
+			foreach($this->_input['entries']['records'] as $entry) {
 				$tableData = array();
 				$section = $this->_input['source']->get('handle');
 
@@ -122,7 +122,7 @@ Class DatasourceFormatHTML extends DatasourceFormat {
 			}
 		}
 		else if ($this->_input['source'] == 'authors') {
-			foreach($this->_input['records'] as $author) {
+			foreach($this->_input['entries']['records'] as $author) {
 				$tableData = array();
 				$values = array();
 				$id = $author->getEncapsulatedObject()->get('id');

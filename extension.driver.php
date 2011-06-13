@@ -74,7 +74,7 @@
 
 			$options = array();
 			foreach($datasources as $d) {
-				if (substr($d['type'], -3) != 'xml')
+				if (substr($d['type'], -3) != 'xml' || $d['type'] == 'navigation')
 					$options[] = array($d['handle'], @in_array($d['handle'], $active_views), $d['name']);
 			}
 
