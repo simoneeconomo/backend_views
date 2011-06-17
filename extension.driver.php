@@ -20,11 +20,6 @@
 		public function getSubscribedDelegates(){
 			return array(
 				array(
-					'page' => '/backend/',
-					'delegate' => 'ExtensionsAddToNavigation',
-					'callback' => 'addViewsMenu'
-				),
-				array(
 					'page' => '/system/preferences/',
 					'delegate' => 'AddCustomPreferenceFieldsets',
 					'callback' => 'addViewsPreferences'
@@ -37,28 +32,31 @@
 			);
 		}
 
-		public function addViewsMenu($context) {
-			$context['navigation'][190] = array(
+		public function fetchNavigation(){
+			$navigation = array(
+				'location' => 190,
 				'name' => __('Views'),
-				'index' => 190,
 				'children' => array()
 			);
 
 			$active_views = Symphony::Configuration()->get('active_views', 'backend_views');
 			$active_views = explode(",", $active_views);
 
+			if(!is_array($active_views) || empty($active_views)) return array();
+
 			$datasources = new DatasourceManager($this->_Parent);
 			$datasources = $datasources->listAll();
 
 			foreach($datasources as $d) {
-				if (@in_array($d['handle'], $active_views)) {
-					$context['navigation'][190]['children'][] = array(
-						'link' => '/extension/backend_views/view/' . $d['handle'],
-						'name' => $d['name'],
-						'visible' => 'yes'
+				if (in_array($d['handle'], $active_views)) {
+					$navigation['children'][] = array(
+						'link' => '/view/' . $d['handle'],
+						'name' => $d['name']
 					);
 				}
 			}
+
+			return array($navigation);
 		}
 
 		public function addViewsPreferences($context) {
@@ -96,5 +94,5 @@
 		}
 
 	}
-	
+
 ?>
