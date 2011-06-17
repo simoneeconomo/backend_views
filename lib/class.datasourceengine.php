@@ -279,7 +279,7 @@ Class DatasourceEngine {
 		$section = $sectionManager->fetch($ds->getSource());
 
 		foreach($ds->dsParamINCLUDEDELEMENTS as $field_handle) {
-			$id = $entryManager->fieldManager->fetchFieldIDFromElementName($field_handle);
+			$id = $entryManager->fieldManager->fetchFieldIDFromElementName($field_handle, $ds->getSource());
 			$fields_schema[] = array(
 				'field' => $entryManager->fieldManager->fetch($id),
 				'section' => $section,
