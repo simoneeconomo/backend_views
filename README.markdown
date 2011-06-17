@@ -2,10 +2,10 @@
 
 A different way to filter entries in the backend + the power of Data Sources, all in a single extension
 
-- Version: 0.1
+- Version: 0.1.1
 - Author: Simone Economo, my.ekoes@gmail.com
-- Build Date: 13st June 2011
-- Requirements: Symphony CMS 2.1.0+
+- Build Date: 17st June 2011
+- Requirements: Symphony CMS 2.2.0+
 
 ## Installation
 

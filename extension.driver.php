@@ -8,8 +8,8 @@
 		public function about() {
 			return array(
 				'name'			=> 'Backend Views',
-				'version'		=> '0.1',
-				'release-date'	=> '2011-06-12',
+				'version'		=> '0.1.1',
+				'release-date'	=> '2011-06-17',
 				'author' => array('name' => 'Simone Economo',
 					'website' => 'http://www.lineheight.net',
 					'email' => 'my.ekoes@gmail.com'),
