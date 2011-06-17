@@ -215,8 +215,9 @@ Class DatasourceEngine {
 					$where = preg_replace('/`t\d+`.value/', '`e`.creation_date', $where);
 				} else {
 					if(!$fieldPool[$field_id]->buildDSRetrivalSQL($value, $joins, $where, ($filter_type == DS_FILTER_AND ? true : false))) {
-						$ds->_force_empty_result = true;
-						return array();
+						// @todo This can't be set from this context as it's protected to the Datasource class
+						//$ds->_force_empty_result = true;
+						//return array();
 					}
 					if(!$group) $group = $fieldPool[$field_id]->requiresSQLGrouping();
 				}
@@ -279,7 +280,7 @@ Class DatasourceEngine {
 		$section = $sectionManager->fetch($ds->getSource());
 
 		foreach($ds->dsParamINCLUDEDELEMENTS as $field_handle) {
-			$id = $entryManager->fieldManager->fetchFieldIDFromElementName($field_handle);
+			$id = $entryManager->fieldManager->fetchFieldIDFromElementName($field_handle, $ds->getSource());
 			$fields_schema[] = array(
 				'field' => $entryManager->fieldManager->fetch($id),
 				'section' => $section,
