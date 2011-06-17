@@ -54,7 +54,7 @@ Class DatasourceFormatHTML extends DatasourceFormat {
 	protected function __formatRecords() {
 		if(!is_array($this->_input['entries']['records']) || empty($this->_input['entries']['records'])){
 			return $this->_output['records'] = array(
-				Widget::TableRow(array(Widget::TableData(__('None found.'), 'inactive', NULL, count($aTableHead))), 'odd')
+				Widget::TableRow(array(Widget::TableData(__('None found.'), 'inactive', NULL, count($this->_input['schema']))), 'odd')
 			);
 		}
 
