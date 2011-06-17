@@ -15,8 +15,8 @@ abstract class DatasourceFormat {
 		
 		$this->_input = $input;
 		$this->_output = array(
-			'schema' => NULL,
-			'records' => NULL,
+			'schema' => array(),
+			'records' => array(),
 		);
 		$this->_engine = $engine;
 	}

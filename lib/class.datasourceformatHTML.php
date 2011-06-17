@@ -52,12 +52,12 @@ Class DatasourceFormatHTML extends DatasourceFormat {
 	}
 
 	protected function __formatRecords() {
-		if(!is_array($this->_input['entries']) || empty($this->_input['entries'])){
+		if(!is_array($this->_input['entries']['records']) || empty($this->_input['entries']['records'])){
 			return $this->_output['records'] = array(
 				Widget::TableRow(array(Widget::TableData(__('None found.'), 'inactive', NULL, count($aTableHead))), 'odd')
 			);
 		}
-		
+
 		if ($this->_input['source'] instanceof Section) {
 			foreach($this->_input['entries']['records'] as $entry) {
 				$tableData = array();
