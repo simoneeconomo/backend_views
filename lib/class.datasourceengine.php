@@ -138,7 +138,7 @@ Class DatasourceEngine {
 			$authors = AuthorManager::fetch($ds->dsParamSORT, $ds->dsParamORDER);
 		}
 
-		// This feels a bit hackish. Each Author object is encapsulated in a new one that provides some extra methods
+		// This feels a bit hackish. Each Author object is encapsulated into a new one that provides some extra methods
 		$wrappers = array();
 		foreach($authors as $author) {
 			$wrappers[] =  new AuthorWrapper($author, $engine);
@@ -281,11 +281,14 @@ Class DatasourceEngine {
 
 		foreach($ds->dsParamINCLUDEDELEMENTS as $field_handle) {
 			$id = $entryManager->fieldManager->fetchFieldIDFromElementName($field_handle, $ds->getSource());
-			$fields_schema[] = array(
-				'field' => $entryManager->fieldManager->fetch($id),
-				'section' => $section,
-				'external' => false
-			);
+
+			if ($id) {
+				$fields_schema[] = array(
+					'field' => $entryManager->fieldManager->fetch($id),
+					'section' => $section,
+					'external' => false
+				);
+			}
 		}
 
 		$associated_sections = $section->fetchAssociatedSections(true);
