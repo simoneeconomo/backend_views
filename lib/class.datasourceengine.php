@@ -280,6 +280,10 @@ Class DatasourceEngine {
 		$section = $sectionManager->fetch($ds->getSource());
 
 		foreach($ds->dsParamINCLUDEDELEMENTS as $field_handle) {
+			if (strpos($field_handle, ':') !== false) {
+				$field_handle = substr($field_handle, 0, strpos($field_handle, ':'));
+			}
+
 			$id = $entryManager->fieldManager->fetchFieldIDFromElementName($field_handle, $ds->getSource());
 
 			if ($id) {
