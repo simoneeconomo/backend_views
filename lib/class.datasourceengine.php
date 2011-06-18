@@ -276,6 +276,7 @@ Class DatasourceEngine {
 		 */
 
 		$fields_schema = array();
+		$fields_pool = array();
 		$sectionManager = new SectionManager($engine);
 		$section = $sectionManager->fetch($ds->getSource());
 
@@ -286,7 +287,8 @@ Class DatasourceEngine {
 
 			$id = $entryManager->fieldManager->fetchFieldIDFromElementName($field_handle, $ds->getSource());
 
-			if ($id) {
+			if ($id && !in_array($id, $fields_pool)) {
+				$fields_pool[] = $id;
 				$fields_schema[] = array(
 					'field' => $entryManager->fieldManager->fetch($id),
 					'section' => $section,
