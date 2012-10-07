@@ -4,10 +4,10 @@ Class DatasourceEngine {
 
 	public static function fetch(Datasource $ds, $engine, $context = array()) {
 		switch($ds->getSource()) {
-#			case 'navigation': {
-#					return self::__processNavigation($ds, $engine, $context);
-#				}
-#				break;
+			case 'navigation': {
+					return self::__processNavigation($ds, $engine, $context);
+				}
+				break;
 			case 'authors': {
 					return self::__processAuthors($ds, $engine, $context);
 				}
@@ -48,7 +48,7 @@ Class DatasourceEngine {
 			}
 		}
 
-		if(trim($this->dsParamFILTERS['parent']) != '') {
+		if(trim($ds->dsParamFILTERS['parent']) != '') {
 			$parent = $ds->dsParamFILTERS['parent'];
 			$parent_paths = preg_split('/,\s*/', $parent, -1, PREG_SPLIT_NO_EMPTY);
 			$parent_paths = array_map(create_function('$a', 'return trim($a, " /");'), $parent_paths);
@@ -110,7 +110,7 @@ Class DatasourceEngine {
 
 				$sql = "SELECT `id` FROM `tbl_authors` WHERE `".$field."` IN ('".implode("', '", $bits)."')";
 
-				$authors = $database->fetchCol('id', $sql);
+				$authors = Symphony::Database()->fetchCol('id', $sql);
 				$ret = (is_array($authors) && !empty($authors) ? $authors : NULL);
 
 				if(empty($ret)){
@@ -162,10 +162,7 @@ Class DatasourceEngine {
 		$where = $joins = NULL;
 		$group = false;
 
-		include_once(TOOLKIT . '/class.entrymanager.php');
-		$entryManager = new EntryManager($engine);
-
-		if(!$section = $entryManager->sectionManager->fetch($ds->getSource())){
+		if(!$section = SectionManager::fetch($ds->getSource())){
 			$about = $ds->about();
 			trigger_error(__('The section associated with the data source <code>%s</code> could not be found.', array($about['name'])), E_USER_ERROR);
 		}
@@ -191,7 +188,7 @@ Class DatasourceEngine {
 				}
 
 				if(!isset($fieldPool[$field_id]) || !is_object($fieldPool[$field_id]))
-					$fieldPool[$field_id] =& $entryManager->fieldManager->fetch($field_id);
+					$fieldPool[$field_id] =& FieldManager::fetch($field_id);
 
 				if($field_id != 'id' && $field_id != 'system:date' && !($fieldPool[$field_id] instanceof Field)){
 					throw new Exception(
@@ -230,12 +227,12 @@ Class DatasourceEngine {
 		 */
 		
 		if($ds->dsParamSORT == 'system:id') {
-			$entryManager->setFetchSorting('id', $ds->dsParamORDER);
+			EntryManager::setFetchSorting('id', $ds->dsParamORDER);
 		}
 		else if($ds->dsParamSORT == 'system:date') {
-			$entryManager->setFetchSorting('date', $ds->dsParamORDER);
+			EntryManager::setFetchSorting('date', $ds->dsParamORDER);
 		} else {
-			$entryManager->setFetchSorting($entryManager->fieldManager->fetchFieldIDFromElementName($ds->dsParamSORT, $ds->getSource()), $ds->dsParamORDER);
+			EntryManager::setFetchSorting(FieldManager::fetchFieldIDFromElementName($ds->dsParamSORT, $ds->getSource()), $ds->dsParamORDER);
 		}
 
 		/* -----------------------------------------------------
@@ -252,7 +249,7 @@ Class DatasourceEngine {
 #			$datasource_schema[] = $ds->dsParamPARAMOUTPUT;
 
 #		if ($ds->dsParamGROUP)
-#			$datasource_schema[] = $entryManager->fieldManager->fetchHandleFromID($ds->dsParamGROUP);
+#			$datasource_schema[] = $ieldManager->fetchHandleFromID($ds->dsParamGROUP);
 
 		if(!isset($ds->dsParamPAGINATERESULTS)) {
 			$ds->dsParamPAGINATERESULTS = 'yes';
@@ -277,23 +274,24 @@ Class DatasourceEngine {
 
 		$fields_schema = array();
 		$fields_pool = array();
-		$sectionManager = new SectionManager($engine);
-		$section = $sectionManager->fetch($ds->getSource());
+		$section = SectionManager::fetch($ds->getSource());
 
-		foreach($ds->dsParamINCLUDEDELEMENTS as $field_handle) {
-			if (strpos($field_handle, ':') !== false) {
-				$field_handle = substr($field_handle, 0, strpos($field_handle, ':'));
-			}
+		if($ds->dsParamINCLUDEDELEMENTS){
+			foreach($ds->dsParamINCLUDEDELEMENTS as $field_handle) {
+				if (strpos($field_handle, ':') !== false) {
+					$field_handle = substr($field_handle, 0, strpos($field_handle, ':'));
+				}
 
-			$id = $entryManager->fieldManager->fetchFieldIDFromElementName($field_handle, $ds->getSource());
+				$id = FieldManager::fetchFieldIDFromElementName($field_handle, $ds->getSource());
 
-			if ($id && !in_array($id, $fields_pool)) {
-				$fields_pool[] = $id;
-				$fields_schema[] = array(
-					'field' => $entryManager->fieldManager->fetch($id),
-					'section' => $section,
-					'external' => false
-				);
+				if ($id && !in_array($id, $fields_pool)) {
+					$fields_pool[] = $id;
+					$fields_schema[] = array(
+						'field' => FieldManager::fetch($id),
+						'section' => $section,
+						'external' => false
+					);
+				}
 			}
 		}
 
@@ -302,19 +300,19 @@ Class DatasourceEngine {
 			foreach($associated_sections as $as){
 				$id = $as['child_section_field_id'];
 				$fields_schema[] = array(
-					'field' => $entryManager->fieldManager->fetch($id),
-					'section' => $sectionManager->fetch($as['child_section_id']),
+					'field' => FieldManager::fetch($id),
+					'section' => SectionManager::fetch($as['child_section_id']),
 					'external' => true
 				);
 			}
 		}
 
 		/* -----------------------------------------------------
-		 * Query execution & Delegates
+		 * Query execution
 		 * -----------------------------------------------------
 		 */
 
-		$entries = $entryManager->fetchByPage(
+		$entries = EntryManager::fetchByPage(
 			$startpage, $ds->getSource(),
 			$entries_per_page,
 			$where, $joins, $group,
@@ -366,10 +364,9 @@ Class AuthorWrapper {
 
 	public function getDefaultArea() {
 		$default_area = $this->_object->get('default_area');
-		$sectionManager = new SectionManager($this->_engine);
 		
 		if ($default_area) {
-				$section = $sectionManager->fetch($default_area);
+				$section = SectionManager::fetch($default_area);
 		} else {
 			$id = Symphony::Database()->query("
 				SELECT `id`
@@ -377,7 +374,7 @@ Class AuthorWrapper {
 				ORDER BY `id` ASC
 				LIMIT 1
 			");
-			$section = $sectionManager->fetch($id);
+			$section = SectionManager::fetch($id);
 		}
 
 		return (is_array($section)) ? $section[0] : $section;

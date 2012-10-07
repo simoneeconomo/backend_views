@@ -8,12 +8,12 @@
 		public function about() {
 			return array(
 				'name'			=> 'Backend Views',
-				'version'		=> '0.1.1',
-				'release-date'	=> '2011-06-17',
+				'version'		=> '0.1.2',
+				'release-date'	=> '2012-10-08',
 				'author' => array('name' => 'Simone Economo',
 					'website' => 'http://www.lineheight.net',
 					'email' => 'my.ekoes@gmail.com'),
-				'description'	=> 'A different way to filter entries in the backend + the power of Data Sources, all in a single extension'
+				'description'	=> 'Use Data Sources to filter entries in the Symphony backend.'
 			);
 		}
 
@@ -44,8 +44,7 @@
 
 			if(!is_array($active_views) || empty($active_views)) return array();
 
-			$datasources = new DatasourceManager($this->_Parent);
-			$datasources = $datasources->listAll();
+			$datasources = DatasourceManager::listAll();
 
 			foreach($datasources as $d) {
 				if (in_array($d['handle'], $active_views)) {
@@ -60,8 +59,7 @@
 		}
 
 		public function addViewsPreferences($context) {
-			$dsManager = new DatasourceManager(Administration::instance());
-			$datasources = $dsManager->listAll();
+			$datasources = DatasourceManager::listAll();
 
 			$fieldset = new XMLElement('fieldset', NULL, array('class' => 'settings'));
 			$fieldset->appendChild(new XMLElement('legend', __('Views')));

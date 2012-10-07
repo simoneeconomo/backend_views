@@ -9,8 +9,8 @@
 
 	class contentExtensionBackend_viewsView extends contentPublish {
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 		}
 
 		private static function getDSNameFromHandle($handle, $datasources) {
@@ -23,30 +23,31 @@
 		}
 
 		public function view(){
-			$datasources = new DatasourceManager(Administration::instance());
-			$datasource = self::getDSNameFromHandle($this->_context[0], $datasources->listAll());
+			$context = $this->getContext();
+			$datasources = DatasourceManager::listAll();
+			$datasource = self::getDSNameFromHandle($context[0], $datasources);
 
 			if ($datasource === NULL)
 				Administration::instance()->customError(
 					__('Unknown View'),
-					__('The View you are lookin for <code>%s</code> could not be found.', array($this->_context[0]))
+					__('The View you are lookin for <code>%s</code> could not be found.', array($context[0]))
 				);
 
 			$this->setPageType('table');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $datasource)));
 
-			$this->appendSubheading($datasource,
+			$this->appendSubheading($datasource, array(
 				Widget::Anchor(
 					__('Create New'),
 					URL . '/symphony/blueprints/datasources/new/',
 					__('Create a new view'),
-					'create button', NULL, array('accesskey' => 'c'))->generate() . ' ' .
+					'create button', NULL, array('accesskey' => 'c')),
 				Widget::Anchor(
 					__('Edit view'),
-					URL . '/symphony/blueprints/datasources/edit/' . $this->_context[0],
+					URL . '/symphony/blueprints/datasources/edit/' . $context[0],
 					__('Edit the current view'),
-					'button', NULL, array('accesskey' => 'e'))->generate()
-			);
+					'button', NULL, array('accesskey' => 'e'))
+			));
 
 			/* -----------------------------------------------------
 			 * Fetching
@@ -54,7 +55,7 @@
 			 */
 
 			$result = DatasourceEngine::fetch(
-				$datasources->create($this->_context[0], NULL, false),
+				DatasourceManager::create($this->_context[0], NULL, false),
 				Administration::instance(),
 				array(
 					'startpage' => $_REQUEST['pg']

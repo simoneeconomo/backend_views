@@ -8,15 +8,21 @@ Class DatasourceFormatHTML extends DatasourceFormat {
 
 	protected function __formatSchema() {
 		if ($this->_input['source'] instanceof Section) {
-			foreach($this->_input['schema'] as $f) {
-				$this->_output['schema'][] = array(
-					$f['field']->get('label'), 'col',
-					array('id' => 'field-' . $f['field']->get('id'), 'class' => 'field-' . $f['field']->get('type'))
-				);
-			}
 
 			$allExternal = true;
+
 			foreach($this->_input['schema'] as $f) {
+				if($f['external']){
+					$this->_output['schema'][] = array(
+						$f['section']->get('name'), 'col',
+						array('id' => 'field-' . $f['field']->get('id'), 'class' => 'field-' . $f['field']->get('type'))
+					);
+				} else {
+					$this->_output['schema'][] = array(
+						$f['field']->get('label'), 'col',
+						array('id' => 'field-' . $f['field']->get('id'), 'class' => 'field-' . $f['field']->get('type'))
+					);
+				}
 				$allExternal = $allExternal && $f['external'];
 			}
 
